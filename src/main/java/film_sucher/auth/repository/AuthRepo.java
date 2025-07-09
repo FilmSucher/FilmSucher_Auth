@@ -10,6 +10,7 @@ import film_sucher.auth.entity.User;
 @Repository
 public interface AuthRepo extends CrudRepository<User, Long>{
 
-    public Optional<User> findByUsername(String username);
+    Optional<User> findByUsername(String username);
 
+    boolean existsByUsername(String username);
 }

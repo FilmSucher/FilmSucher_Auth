@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import film_sucher.auth.entity.User;
 import film_sucher.auth.repository.AuthRepo;
 import film_sucher.auth.security.JWTUtils;
+import jakarta.transaction.Transactional;
 
 @Service
 public class AuthService{
@@ -27,19 +28,20 @@ public class AuthService{
         // get user or null
         Optional<User> user = repo.findByUsername(username);
         // if not null and password is right
-        if(user.isPresent()){
-            if (passMatches(password, user.get().getPassword())){
-                // make new Token
-                String token = jwtUtils.generateToken(username, user.get().getRole());
-                return Optional.of(token);
-            }
+        if(user.isPresent() && new BCryptPasswordEncoder().matches(password, user.get().getPassword())){
+            // make new Token
+            String token = jwtUtils.generateToken(username, user.get().getId(), user.get().getRole());
+            return Optional.of(token);
         }
         return Optional.empty();
     }
 
-    // check password matches 
-    private boolean passMatches(String raw, String hashed){
-        return new BCryptPasswordEncoder().matches(raw, hashed);
+    @Transactional
+    public Optional<User> register (String username, String password){
+        User newUser = new User(username, password, User.Role.USER);
+        if (repo.existsByUsername(username)){
+            return Optional.empty();
+        }
+        return Optional.of(repo.save(newUser));
     }
-
 }

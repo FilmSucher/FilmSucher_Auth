@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import film_sucher.auth.dto.LoginRequest;
+import film_sucher.auth.dto.UserDataRequest;
+import film_sucher.auth.entity.User;
 import film_sucher.auth.service.AuthService;
 
 @RestController
@@ -24,11 +25,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    private ResponseEntity<String> login(@RequestBody LoginRequest request){
+    public ResponseEntity<String> login(@RequestBody UserDataRequest request){
         Optional<String> token = service.authenticate(request.getUsername(), request.getPassword());
         if(token.isPresent()){
             return ResponseEntity.ok(token.get());
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Void> register(@RequestBody UserDataRequest request){
+        Optional<User> newUser = service.register(request.getUsername(), request.getPassword());
+        
+        if(newUser.isPresent()){
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 }

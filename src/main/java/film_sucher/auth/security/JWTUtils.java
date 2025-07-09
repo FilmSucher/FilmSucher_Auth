@@ -14,10 +14,18 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @ConfigurationProperties(prefix="token")
 public class JWTUtils{
 
-    private String secret = "";
-    private long validity = 0;
+    private String secret = "super_duper_secret_testkey_filler";
+    private long validity = 3600;
 
-    public String generateToken(String username, User.Role role){
+    //default construktor
+    public JWTUtils(){}
+    //test construktor
+    public JWTUtils(String secret, long validity){
+        this.secret = secret;
+        this.validity = validity;
+    }
+
+    public String generateToken(String username, Long id, User.Role role){
         //current date
         Date now = new Date();
         //end date
@@ -26,6 +34,7 @@ public class JWTUtils{
         String token = Jwts.builder()
                     .setSubject(username)
                     .claim("role", role)
+                    .claim("id", id)
                     .setIssuedAt(now)
                     .setExpiration(expiry)
                     .signWith(SignatureAlgorithm.HS256, secret.getBytes())
