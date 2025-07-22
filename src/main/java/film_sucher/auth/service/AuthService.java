@@ -3,10 +3,13 @@ package film_sucher.auth.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import film_sucher.auth.entity.User;
+import film_sucher.auth.exceptions.DatabaseException;
+import film_sucher.auth.exceptions.UnauthorizedException;
 import film_sucher.auth.repository.AuthRepo;
 import film_sucher.auth.security.JWTUtils;
 import jakarta.transaction.Transactional;
@@ -16,32 +19,42 @@ public class AuthService{
 
     private final AuthRepo repo;
     private final JWTUtils jwtUtils;
+    private final PasswordEncoder encoder;
 
 
     @Autowired
-    public AuthService(AuthRepo repo, JWTUtils jwtUtils){
+    public AuthService(AuthRepo repo, JWTUtils jwtUtils, PasswordEncoder encoder){
         this.repo = repo;
         this.jwtUtils = jwtUtils;
+        this.encoder = encoder;
     }
 
-    public Optional<String> authenticate (String username, String password){
-        // get user or null
-        Optional<User> user = repo.findByUsername(username);
-        // if not null and password is right
-        if(user.isPresent() && new BCryptPasswordEncoder().matches(password, user.get().getPassword())){
-            // make new Token
-            String token = jwtUtils.generateToken(username, user.get().getId(), user.get().getRole());
-            return Optional.of(token);
+    public String authenticate (String username, String password){
+        Optional<User> user;
+        try {
+            // get user or null
+            user = repo.findByUsername(username);
+        } catch (DataAccessException e) {
+            throw new DatabaseException("Error receiving user from DB", e);
         }
-        return Optional.empty();
+
+        if (user.isEmpty()) throw new UnauthorizedException("User not found");
+        if (encoder.matches(password, user.get().getPassword())){
+            // make and return new Token
+            return jwtUtils.generateToken(username, user.get().getId(), user.get().getRole());
+        } else {
+            throw new UnauthorizedException("Password is wrong");
+        }
     }
 
     @Transactional
-    public Optional<User> register (String username, String password){
-        User newUser = new User(username, password, User.Role.USER);
-        if (repo.existsByUsername(username)){
-            return Optional.empty();
+    public void register (String username, String password){
+        String hashPassword = encoder.encode(password);
+        User newUser = new User(username, hashPassword, User.Role.USER);
+        try {
+            repo.save(newUser);
+        } catch (DataAccessException e) {
+            throw new DatabaseException("Error register user in DB", e);
         }
-        return Optional.of(repo.save(newUser));
     }
 }

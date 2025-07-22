@@ -1,7 +1,5 @@
 package film_sucher.auth.controller;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,12 +8,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import film_sucher.auth.dto.TokenResponse;
 import film_sucher.auth.dto.UserDataRequest;
-import film_sucher.auth.entity.User;
+import film_sucher.auth.exceptions.DatabaseException;
+import film_sucher.auth.exceptions.UnauthorizedException;
 import film_sucher.auth.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Auth Controller", 
+    description = "Controller for user authentication and registration")
+
 public class AuthController {
     private final AuthService service;
 
@@ -24,22 +31,44 @@ public class AuthController {
         this.service = service;
     }
 
+    // login
+    @Operation(summary = "User login", description = "Checking the username and password of the user in the DB. If successful, generating a token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode="200", description="Data is correct. Token is returned"),
+        @ApiResponse(responseCode="401", description="Data (name or password) is incorrect"),
+        @ApiResponse(responseCode="500", description="Error on backend side")
+    })
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserDataRequest request){
-        Optional<String> token = service.authenticate(request.getUsername(), request.getPassword());
-        if(token.isPresent()){
-            return ResponseEntity.ok(token.get());
+    public ResponseEntity<?> login(@RequestBody UserDataRequest request){
+        String token; 
+        try {
+            token = service.authenticate(request.getUsername(), request.getPassword());
+            return ResponseEntity.status(HttpStatus.OK).body(new TokenResponse(token));
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (DatabaseException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
+    // register
+    @Operation(summary = "Registration", description = "Registration of new users. Username and password as arguments, role is always USER")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode="201", description="User successfully created"),
+        @ApiResponse(responseCode="500", description="Error on backend side")
+    })
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody UserDataRequest request){
-        Optional<User> newUser = service.register(request.getUsername(), request.getPassword());
-        
-        if(newUser.isPresent()){
-            return ResponseEntity.status(HttpStatus.OK).build();
-        }
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    public ResponseEntity<?> register(@RequestBody UserDataRequest request){
+        try{
+            service.register(request.getUsername(), request.getPassword());
+            return ResponseEntity.status(HttpStatus.CREATED).body("User successfully created");
+        } catch (DatabaseException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+        } 
+
     }
 }
