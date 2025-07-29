@@ -39,7 +39,7 @@ pipeline {
             steps {
                 sh '''
 					rm -rf /shared/backend_auth/app.jar
-					cp -r **/target/*.jar /shared/backend_auth/app.jar
+					cp -r target/*.jar /shared/backend_auth/app.jar
                 '''
             }
         }
