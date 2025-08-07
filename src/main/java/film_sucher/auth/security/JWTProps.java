@@ -13,7 +13,7 @@ import lombok.ToString;
 @ConfigurationProperties(prefix="token")
 @Component
 @Getter
-@Setter(AccessLevel.PROTECTED)
+@Setter
 @ToString
 @EqualsAndHashCode
 public class JWTProps {
