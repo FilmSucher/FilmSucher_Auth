@@ -84,7 +84,6 @@ public class AdminService {
         try {
             users = (List<User>) repo.findAll();
         } catch (DataAccessException e) {
-            e.printStackTrace();
             throw new DatabaseException("Error receiving users in DB", e);
         }
 

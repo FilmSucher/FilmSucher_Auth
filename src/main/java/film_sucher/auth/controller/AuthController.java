@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import film_sucher.auth.dto.ApiResponseDTO;
 import film_sucher.auth.dto.TokenResponse;
 import film_sucher.auth.dto.UserDataRequest;
 import film_sucher.auth.exceptions.DatabaseException;
@@ -45,11 +46,11 @@ public class AuthController {
             token = service.authenticate(request.getUsername(), request.getPassword());
             return ResponseEntity.status(HttpStatus.OK).body(new TokenResponse(token));
         } catch (UnauthorizedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponseDTO(e.getMessage(), e, HttpStatus.UNAUTHORIZED));
         } catch (DatabaseException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -63,11 +64,11 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody UserDataRequest request){
         try{
             service.register(request.getUsername(), request.getPassword());
-            return ResponseEntity.status(HttpStatus.CREATED).body("User successfully created");
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseDTO("User successfully created" , null, HttpStatus.CREATED));
         } catch (DatabaseException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB" , e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } 
 
     }

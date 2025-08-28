@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import film_sucher.auth.dto.ApiResponseDTO;
 import film_sucher.auth.dto.UserRequest;
 import film_sucher.auth.dto.UserResponse;
 import film_sucher.auth.entity.User;
@@ -46,11 +47,11 @@ public class AdminController {
     public ResponseEntity<?> addUser(@RequestBody User newUser){
         try {
             service.addUser(newUser);
-            return ResponseEntity.status(HttpStatus.CREATED).body("User successfully created");
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseDTO("User successfully created", null, HttpStatus.CREATED));
         } catch (DatabaseException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -65,13 +66,13 @@ public class AdminController {
     public ResponseEntity<?> changeUser(@RequestBody UserRequest changedUser, @PathVariable("id") Long userId){
         try {
             service.changeUser(userId, changedUser);
-            return ResponseEntity.status(HttpStatus.OK).body("User successfully changed");
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponseDTO("User successfully changed", null, HttpStatus.OK));
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND ).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND ).body(new ApiResponseDTO(e.getMessage(), e, HttpStatus.NOT_FOUND));
         } catch (DatabaseException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -86,13 +87,13 @@ public class AdminController {
     public ResponseEntity<?> deleteUser(@PathVariable("id") Long userId){
         try {
             service.deleteUser(userId);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User successfully deleted");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponseDTO("User successfully deleted", null, HttpStatus.NO_CONTENT));
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND ).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND ).body(new ApiResponseDTO(e.getMessage(), e, HttpStatus.NOT_FOUND));
         } catch (DatabaseException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -109,9 +110,9 @@ public class AdminController {
             user = service.getUser(userId);
             return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (DatabaseException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -128,9 +129,9 @@ public class AdminController {
             users = service.getAll();
             return ResponseEntity.status(HttpStatus.OK).body(users);
         } catch (DatabaseException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 }
