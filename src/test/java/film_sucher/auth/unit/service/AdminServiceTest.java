@@ -153,10 +153,34 @@ public class AdminServiceTest {
         assertEquals("Error deleting user in DB", ex.getMessage());
     }
 
-    // get all
+    // get user
     // ---------------------------------------------------------------------
     @Test
     public void getSuccessfullGet(){
+        User BDUser = new User(user.getUsername(), user.getPassword(), user.getRole());
+        BDUser.setId(userId);
+
+        when(repo.findById(userId)).thenReturn(Optional.of(BDUser));
+        UserResponse resultUsers = service.getUser(userId);
+
+        assertEquals(userId, resultUsers.getId());
+        assertEquals(username, resultUsers.getUsername());
+        assertEquals(role, resultUsers.getRole());
+    }
+
+    @Test
+    public void getDBErrorGet(){
+        doThrow(new DataAccessException("Error") {}).when(repo).findById(userId);
+
+        DatabaseException ex = assertThrows(DatabaseException.class, () -> 
+            service.getUser(userId));
+        assertEquals("Error receiving users in DB", ex.getMessage());
+    }
+
+    // get all
+    // ---------------------------------------------------------------------
+    @Test
+    public void getSuccessfullGetAll(){
         User BDUser = new User(user.getUsername(), user.getPassword(), user.getRole());
         BDUser.setId(userId);
 
@@ -170,7 +194,7 @@ public class AdminServiceTest {
     }
 
     @Test
-    public void getDBErrorGet(){
+    public void getDBErrorGetAll(){
         doThrow(new DataAccessException("Error") {}).when(repo).findAll();
 
         DatabaseException ex = assertThrows(DatabaseException.class, () -> 

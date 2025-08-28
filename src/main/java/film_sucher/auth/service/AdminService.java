@@ -82,6 +82,9 @@ public class AdminService {
     public List<UserResponse> getAll(){
         List<User> users;
         try {
+            System.out.println("start");
+            System.out.println(repo.findAll());
+            System.out.println("finish");
             users = (List<User>) repo.findAll();
         } catch (DataAccessException e) {
             throw new DatabaseException("Error receiving users in DB", e);

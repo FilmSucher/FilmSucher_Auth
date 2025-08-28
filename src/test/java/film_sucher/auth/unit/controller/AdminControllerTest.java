@@ -130,6 +130,34 @@ public class AdminControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
         assertEquals("Unexpected error", result.getBody());
     }
+
+    // get
+    @Test
+    public void getSuccessfullGet(){
+        when(service.getUser(userId)).thenReturn(response);
+        ResponseEntity<?> result = controller.getUser(userId);
+    
+        assertEquals(response, result.getBody());
+    }
+
+    @Test
+    public void getDBErrorGet(){
+        when(service.getAll()).thenThrow(new DatabaseException("DB Error", new RuntimeException()));
+        ResponseEntity<?> result = controller.getAllUsers();
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertEquals("Error access in user-DB", result.getBody());
+    }
+
+    @Test
+    public void getUnexpectedGet(){
+        when(service.getAll()).thenThrow(new RuntimeException("Error"));
+        ResponseEntity<?> result = controller.getAllUsers();
+        
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertEquals("Unexpected error", result.getBody());
+    }
+
     // get all
     @Test
     public void getSuccessfullGetAll(){
