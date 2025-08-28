@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -15,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import film_sucher.auth.controller.AuthController;
+import film_sucher.auth.dto.ApiResponseDTO;
 import film_sucher.auth.dto.TokenResponse;
 import film_sucher.auth.dto.UserDataRequest;
 import film_sucher.auth.exceptions.DatabaseException;
@@ -53,7 +53,12 @@ public class AuthControllerTest{
         ResponseEntity<?> response = controller.login(loginRequest);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("User not found", response.getBody());
+        assertTrue(response.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) response.getBody();
+        assertEquals(body.getE().getMessage(), body.getMessage());
+        assertTrue(body.getE() instanceof UnauthorizedException);
+        assertEquals(HttpStatus.UNAUTHORIZED, body.getStatus());
     }
     @Test
     public void getDBErrorLog(){
@@ -62,7 +67,12 @@ public class AuthControllerTest{
         ResponseEntity<?> response = controller.login(loginRequest);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Error access in user-DB", response.getBody());
+        assertTrue(response.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) response.getBody();
+        assertEquals("Error access in user-DB", body.getMessage());
+        assertTrue(body.getE() instanceof DatabaseException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
     @Test
     public void getUnknownErrorLog(){
@@ -71,7 +81,12 @@ public class AuthControllerTest{
         ResponseEntity<?> response = controller.login(loginRequest);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Unexpected error", response.getBody());
+        assertTrue(response.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) response.getBody();
+        assertEquals("Unexpected error", body.getMessage());
+        assertTrue(body.getE() instanceof RuntimeException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     // register test
@@ -80,7 +95,12 @@ public class AuthControllerTest{
         doNothing().when(service).register(username, password);
         ResponseEntity<?> response = controller.register(loginRequest);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals("User successfully created", response.getBody());
+        assertTrue(response.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) response.getBody();
+        assertEquals("User successfully created", body.getMessage());
+        assertEquals(null, body.getE());
+        assertEquals(HttpStatus.CREATED, body.getStatus());
     }
 
     @Test
@@ -88,13 +108,23 @@ public class AuthControllerTest{
         doThrow(new DatabaseException("DB Error", new RuntimeException())).when(service).register(username,password);
         ResponseEntity<?> response = controller.register(loginRequest);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Error access in user-DB", response.getBody());
+        assertTrue(response.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) response.getBody();
+        assertEquals("Error access in user-DB", body.getMessage());
+        assertTrue(body.getE() instanceof DatabaseException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
     @Test
     public void getUnknownErrorReg(){
         doThrow(new RuntimeException("Unexpected")).when(service).register(username,password);
         ResponseEntity<?> response = controller.register(loginRequest);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Unexpected error", response.getBody());
+        assertTrue(response.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) response.getBody();
+        assertEquals("Unexpected error", body.getMessage());
+        assertTrue(body.getE() instanceof RuntimeException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 }

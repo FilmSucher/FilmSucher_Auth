@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import film_sucher.auth.controller.AdminController;
+import film_sucher.auth.dto.ApiResponseDTO;
 import film_sucher.auth.dto.UserRequest;
 import film_sucher.auth.dto.UserResponse;
 import film_sucher.auth.entity.User;
@@ -46,7 +47,12 @@ public class AdminControllerTest {
         doNothing().when(service).addUser(user);
         ResponseEntity<?> result = controller.addUser(user);
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        assertEquals("User successfully created", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("User successfully created", body.getMessage());
+        assertEquals(null, body.getE());
+        assertEquals(HttpStatus.CREATED, body.getStatus());
     }
 
     @Test
@@ -54,7 +60,12 @@ public class AdminControllerTest {
         doThrow(new DatabaseException("DB Error", new RuntimeException())).when(service).addUser(user);
         ResponseEntity<?> result = controller.addUser(user);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Error access in user-DB", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Error access in user-DB", body.getMessage());
+        assertTrue(body.getE() instanceof DatabaseException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     @Test
@@ -62,7 +73,12 @@ public class AdminControllerTest {
         doThrow(new RuntimeException("Error!")).when(service).addUser(user);
         ResponseEntity<?> result = controller.addUser(user);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Unexpected error", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Unexpected error", body.getMessage());
+        assertTrue(body.getE() instanceof RuntimeException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
     // --------------------------------
     // change
@@ -71,7 +87,12 @@ public class AdminControllerTest {
         doNothing().when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals("User successfully changed", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("User successfully changed", body.getMessage());
+        assertEquals(null, body.getE());
+        assertEquals(HttpStatus.OK, body.getStatus());
     }
 
     @Test
@@ -79,7 +100,12 @@ public class AdminControllerTest {
         doThrow(new EntityNotFoundException("NotFound in DB", new RuntimeException())).when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
-        assertEquals("NotFound in DB", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals(body.getE().getMessage(), body.getMessage());
+        assertTrue(body.getE() instanceof EntityNotFoundException);
+        assertEquals(HttpStatus.NOT_FOUND, body.getStatus());
     }
 
     @Test
@@ -87,7 +113,12 @@ public class AdminControllerTest {
         doThrow(new DatabaseException("DB Error", new RuntimeException())).when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Error access in user-DB", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Error access in user-DB", body.getMessage());
+        assertTrue(body.getE() instanceof DatabaseException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     @Test
@@ -95,7 +126,12 @@ public class AdminControllerTest {
         doThrow(new RuntimeException("Error!")).when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Unexpected error", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Unexpected error", body.getMessage());
+        assertTrue(body.getE() instanceof RuntimeException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     // delete
@@ -104,7 +140,12 @@ public class AdminControllerTest {
         doNothing().when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
-        assertEquals("User successfully deleted", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("User successfully deleted", body.getMessage());
+        assertEquals(null, body.getE());
+        assertEquals(HttpStatus.NO_CONTENT, body.getStatus());
     }
 
     @Test
@@ -112,7 +153,12 @@ public class AdminControllerTest {
         doThrow(new EntityNotFoundException("NotFound in DB", new RuntimeException())).when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
-        assertEquals("NotFound in DB", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals(body.getE().getMessage(), body.getMessage());
+        assertTrue(body.getE() instanceof EntityNotFoundException);
+        assertEquals(HttpStatus.NOT_FOUND, body.getStatus());
     }
 
     @Test
@@ -120,7 +166,12 @@ public class AdminControllerTest {
         doThrow(new DatabaseException("DB Error", new RuntimeException())).when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Error access in user-DB", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Error access in user-DB", body.getMessage());
+        assertTrue(body.getE() instanceof DatabaseException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     @Test
@@ -128,7 +179,12 @@ public class AdminControllerTest {
         doThrow(new RuntimeException("Error!")).when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Unexpected error", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Unexpected error", body.getMessage());
+        assertTrue(body.getE() instanceof Exception);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     // get
@@ -146,7 +202,12 @@ public class AdminControllerTest {
         ResponseEntity<?> result = controller.getAllUsers();
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Error access in user-DB", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Error access in user-DB", body.getMessage());
+        assertTrue(body.getE() instanceof DatabaseException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     @Test
@@ -155,7 +216,12 @@ public class AdminControllerTest {
         ResponseEntity<?> result = controller.getAllUsers();
         
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Unexpected error", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Unexpected error", body.getMessage());
+        assertTrue(body.getE() instanceof Exception);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     // get all
@@ -177,7 +243,12 @@ public class AdminControllerTest {
         ResponseEntity<?> result = controller.getAllUsers();
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Error access in user-DB", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Error access in user-DB", body.getMessage());
+        assertTrue(body.getE() instanceof DatabaseException);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 
     @Test
@@ -186,6 +257,11 @@ public class AdminControllerTest {
         ResponseEntity<?> result = controller.getAllUsers();
         
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals("Unexpected error", result.getBody());
+        assertTrue(result.getBody() instanceof ApiResponseDTO);
+
+        ApiResponseDTO body = (ApiResponseDTO) result.getBody();
+        assertEquals("Unexpected error", body.getMessage());
+        assertTrue(body.getE() instanceof Exception);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, body.getStatus());
     }
 }
