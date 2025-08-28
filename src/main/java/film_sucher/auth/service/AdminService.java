@@ -66,6 +66,18 @@ public class AdminService {
         }
     }
 
+    //get
+    public UserResponse getUser(Long userId){
+        User user;
+        try {
+            user = repo.findById(userId).get();
+        } catch (DataAccessException e) {
+            throw new DatabaseException("Error receiving users in DB", e);
+        }
+        UserResponse dtoUser = new UserResponse(user.getId(), user.getUsername(), user.getRole());
+        return dtoUser;
+    }
+
     //get list
     public List<UserResponse> getAll(){
         List<User> users;

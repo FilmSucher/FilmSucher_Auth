@@ -96,6 +96,25 @@ public class AdminController {
         }
     }
 
+    // get by id
+    @Operation(summary = "Get User", description = "Getting a user by id from the database. For admins only.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode="200", description="User successfully received"),
+        @ApiResponse(responseCode="500", description="Error on backend side")
+    })
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getUser(@PathVariable Long userId){
+        UserResponse user;
+        try {
+            user = service.getUser(userId);
+            return ResponseEntity.status(HttpStatus.OK).body(user);
+        } catch (DatabaseException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body("Error access in user-DB");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+        }
+    }
+
     // get all
     @Operation(summary = "Get List Users", description = "Getting a list of all users from the database. For admins only.")
     @ApiResponses(value = {
