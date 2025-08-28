@@ -62,7 +62,7 @@ public class AdminController {
         @ApiResponse(responseCode="500", description="Error on backend side")
     })
     @PatchMapping("/user/{id}")
-    public ResponseEntity<?> changeUser(@RequestBody UserRequest changedUser, @PathVariable Long userId){
+    public ResponseEntity<?> changeUser(@RequestBody UserRequest changedUser, @PathVariable("id") Long userId){
         try {
             service.changeUser(userId, changedUser);
             return ResponseEntity.status(HttpStatus.OK).body("User successfully changed");
@@ -83,7 +83,7 @@ public class AdminController {
         @ApiResponse(responseCode="500", description="Error on backend side")
     })
     @DeleteMapping("/user/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long userId){
+    public ResponseEntity<?> deleteUser(@PathVariable("id") Long userId){
         try {
             service.deleteUser(userId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User successfully deleted");
@@ -103,7 +103,7 @@ public class AdminController {
         @ApiResponse(responseCode="500", description="Error on backend side")
     })
     @GetMapping("/user/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long userId){
+    public ResponseEntity<?> getUser(@PathVariable("id") Long userId){
         UserResponse user;
         try {
             user = service.getUser(userId);
