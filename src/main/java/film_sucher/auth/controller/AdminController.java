@@ -2,6 +2,8 @@ package film_sucher.auth.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +20,7 @@ import film_sucher.auth.dto.UserRequest;
 import film_sucher.auth.dto.UserResponse;
 import film_sucher.auth.entity.User;
 import film_sucher.auth.exceptions.DatabaseException;
+import film_sucher.auth.security.JWTUtils;
 import film_sucher.auth.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,11 +33,14 @@ import jakarta.persistence.EntityNotFoundException;
 @Tag(name = "Admin Controller", 
     description = "Manage users in the database. Access only for authorized administrators")
 public class AdminController {
-
     private final AdminService service;
+    private final JWTUtils jwtUtils;
 
-    public AdminController(AdminService service){
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
+
+    public AdminController(AdminService service, JWTUtils jwtUtils){
         this.service = service;
+        this.jwtUtils = jwtUtils;
     }
 
     // add
@@ -45,12 +51,17 @@ public class AdminController {
     })
     @PostMapping("/user")
     public ResponseEntity<?> addUser(@RequestBody User newUser){
+        UserResponse admin = jwtUtils.getUserFromToken();
         try {
+            logger.info("Attempt to add user with username:{} from admin: {} with userId: {}", newUser.getUsername(), admin.getUsername(), admin.getId());
             service.addUser(newUser);
+            logger.info("User with username {} succesfully added in DB", newUser.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseDTO("User successfully created", null, HttpStatus.CREATED));
         } catch (DatabaseException e) {
+            logger.warn("DatabaseException while created user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
+            logger.warn("UnexpectedException while created user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
@@ -64,14 +75,20 @@ public class AdminController {
     })
     @PatchMapping("/user/{id}")
     public ResponseEntity<?> changeUser(@RequestBody UserRequest changedUser, @PathVariable("id") Long userId){
+        UserResponse admin = jwtUtils.getUserFromToken();
         try {
+            logger.info("Attempt to change user with id: {} from admin: {} with userId: {}", userId, admin.getUsername(), admin.getId());
             service.changeUser(userId, changedUser);
+            logger.info("User with userId {} succesfully changed in DB", userId);
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponseDTO("User successfully changed", null, HttpStatus.OK));
         } catch (EntityNotFoundException e) {
+            logger.warn("User with ID: {} not found", userId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND ).body(new ApiResponseDTO(e.getMessage(), e, HttpStatus.NOT_FOUND));
         } catch (DatabaseException e) {
+            logger.warn("DatabaseException while changed user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
+            logger.warn("UnexpectedException while changed user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
@@ -85,14 +102,20 @@ public class AdminController {
     })
     @DeleteMapping("/user/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable("id") Long userId){
+        UserResponse admin = jwtUtils.getUserFromToken();
         try {
+            logger.info("Attempt to delete user with id: {} from admin: {} with userId: {}", userId, admin.getUsername(), admin.getId());
             service.deleteUser(userId);
+            logger.info("User with userId {} succesfully deleted from DB", userId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponseDTO("User successfully deleted", null, HttpStatus.NO_CONTENT));
         } catch (EntityNotFoundException e) {
+            logger.warn("User with ID: {} not found", userId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND ).body(new ApiResponseDTO(e.getMessage(), e, HttpStatus.NOT_FOUND));
         } catch (DatabaseException e) {
+            logger.warn("DatabaseException while deleting user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
+            logger.warn("UnexpectedException while deleting user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
@@ -108,10 +131,13 @@ public class AdminController {
         UserResponse user;
         try {
             user = service.getUser(userId);
+            logger.info("User with userId: {} getted from DB", userId);
             return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (DatabaseException e) {
+            logger.warn("DatabaseException while getting user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
+            logger.warn("UnexpectedException while getting user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
@@ -127,10 +153,13 @@ public class AdminController {
         List<UserResponse> users;
         try {
             users = service.getAll();
+            logger.info("List of users getted from DB");
             return ResponseEntity.status(HttpStatus.OK).body(users);
         } catch (DatabaseException e) {
+            logger.warn("DatabaseException while getting list of alle users: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR ).body(new ApiResponseDTO("Error access in user-DB", e, HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (Exception e) {
+            logger.warn("UnexpectedException while getting list of alle users: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponseDTO("Unexpected error", e, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }

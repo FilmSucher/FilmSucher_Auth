@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +24,8 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JWTFilter extends OncePerRequestFilter{
 
     private final JWTUtils jwtUtils;
+
+    private static final Logger logger = LoggerFactory.getLogger(JWTFilter.class);
 
     public JWTFilter(JWTUtils jwtUtils){
         this.jwtUtils = jwtUtils;
@@ -47,12 +51,14 @@ public class JWTFilter extends OncePerRequestFilter{
         try {
             // parse and get claims
             Claims claims = jwtUtils.parseToken(token);
+            logger.info("Claims getted");
 
             // get props
             // id and name in principal    
             Map<String,Object> principal = new HashMap<>();
             principal.put("id", (Integer) claims.get("id"));
             principal.put("username", claims.getSubject());
+            logger.info("Properties getted");
 
             // roles in authorities
             List<String> roles = (List<String>) claims.get("roles");
@@ -62,12 +68,15 @@ public class JWTFilter extends OncePerRequestFilter{
             for (String role : roles) {
                 authorities.add(new SimpleGrantedAuthority(role));
             }
+            logger.info("Authorities added");
 
             // make Auth-object
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principal, null, authorities);
+            logger.info("Token created");
 
             // set im context
             SecurityContextHolder.getContext().setAuthentication(auth);
+            logger.info("Token registriert in system");
         } 
         catch (JwtException | IllegalArgumentException e) {
             // clear context, if token is invalid
