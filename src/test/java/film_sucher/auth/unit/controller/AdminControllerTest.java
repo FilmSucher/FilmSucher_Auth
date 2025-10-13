@@ -21,6 +21,7 @@ import film_sucher.auth.dto.UserRequest;
 import film_sucher.auth.dto.UserResponse;
 import film_sucher.auth.entity.User;
 import film_sucher.auth.exceptions.DatabaseException;
+import film_sucher.auth.security.JWTUtils;
 import film_sucher.auth.service.AdminService;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -29,6 +30,8 @@ public class AdminControllerTest {
 
     @Mock
     public AdminService service;
+    @Mock
+    public JWTUtils jwtUtils;
 
     @InjectMocks
     public AdminController controller;
@@ -41,9 +44,11 @@ public class AdminControllerTest {
     private final UserResponse response = new UserResponse(userId, username, role);
     private final UserRequest request = new UserRequest(username, password, role);
 
+
     // add
     @Test
     public void getSuccessfullAdd(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doNothing().when(service).addUser(user);
         ResponseEntity<?> result = controller.addUser(user);
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
@@ -57,6 +62,7 @@ public class AdminControllerTest {
 
     @Test
     public void getDBErrorAdd(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new DatabaseException("DB Error", new RuntimeException())).when(service).addUser(user);
         ResponseEntity<?> result = controller.addUser(user);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
@@ -70,6 +76,7 @@ public class AdminControllerTest {
 
     @Test
     public void getUnexpectedAdd(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new RuntimeException("Error!")).when(service).addUser(user);
         ResponseEntity<?> result = controller.addUser(user);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
@@ -84,6 +91,7 @@ public class AdminControllerTest {
     // change
     @Test
     public void getSuccessfullChange(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doNothing().when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.OK, result.getStatusCode());
@@ -97,6 +105,7 @@ public class AdminControllerTest {
 
     @Test
     public void getNotFoundChange(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new EntityNotFoundException("NotFound in DB", new RuntimeException())).when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
@@ -110,6 +119,7 @@ public class AdminControllerTest {
 
     @Test
     public void getDBErrorChange(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new DatabaseException("DB Error", new RuntimeException())).when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
@@ -123,6 +133,7 @@ public class AdminControllerTest {
 
     @Test
     public void getUnexpectedChange(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new RuntimeException("Error!")).when(service).changeUser(userId, request);
         ResponseEntity<?> result = controller.changeUser(request, userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
@@ -137,6 +148,7 @@ public class AdminControllerTest {
     // delete
     @Test
     public void getSuccessfullDel(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doNothing().when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
@@ -150,6 +162,7 @@ public class AdminControllerTest {
 
     @Test
     public void getNotFoundDel(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new EntityNotFoundException("NotFound in DB", new RuntimeException())).when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
@@ -163,6 +176,7 @@ public class AdminControllerTest {
 
     @Test
     public void getDBErrorDel(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new DatabaseException("DB Error", new RuntimeException())).when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
@@ -176,6 +190,7 @@ public class AdminControllerTest {
 
     @Test
     public void getUnexpectedDel(){
+        when(jwtUtils.getUserFromToken()).thenReturn(response);
         doThrow(new RuntimeException("Error!")).when(service).deleteUser(userId);
         ResponseEntity<?> result = controller.deleteUser(userId);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
